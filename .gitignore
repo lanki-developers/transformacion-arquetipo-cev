@@ -1,3 +1,2 @@
-files/
-*.xls
-*.xlsx
+files/*.xls
+files/*.xlsx
