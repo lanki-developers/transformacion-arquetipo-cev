@@ -16,7 +16,13 @@ if($PCO_Accion=="Cargar_Excel")
 
     //obtener filas
     $filas = $hoja_arquetipo_inicial->getHighestRow();
-    echo "<br/>Nro de fila:".$filas."<hr/>";
+
+    echo '<script>
+      function actualizarFilaRevisada(fila){
+        $("#fila_revisando").html("Revisadas "+fila+" ");
+      }
+    </script>';
+    echo '<div><span id="fila_revisando"></span>de '.$filas.' filas<hr/>';
     //die();
     $meses = [
       'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
@@ -30,20 +36,26 @@ if($PCO_Accion=="Cargar_Excel")
     for($row=2; $row<=$filas; $row++)
     {
       //Capturar valor de las columnas
-      //$clases_en_vivo[$row-1]['fecha_clase'] = $hoja_arquetipo_inicial->getCell('F'.$row)->getValue();
-      $fecha_clase = transformarFechaClase($hoja_arquetipo_inicial->getCell('F'.$row)->getValue());
-      $clases_en_vivo[$row-1]['linea'] = $row;
-      $clases_en_vivo[$row-1]['codigocurso'] = $hoja_arquetipo_inicial->getCell('E'.$row)->getValue();
 
-      //$clases_en_vivo[$row-1]['nombrecurso'] = $hoja_arquetipo_inicial->getCell('F'.$row)->getValue();
-      $clases_en_vivo[$row-1]['nombrecurso'] = $hoja_arquetipo_inicial->getCell('G'.$row)->getValue();
+      //echo "<br/><hr/>Filas $row";
+      ?>
+      <script>actualizarFilaRevisada(<?php echo $row; ?>)</script>
+      <?php
+      //$fecha_clase = transformarFechaClase($hoja_arquetipo_inicial->getCell('H'.$row)->getValue()); //COL-CURSO H
+      //var_dump($fecha_clase);
+
+      $clases_en_vivo[$row-1]['linea'] = $row; // Contar ls lineas para el mensaje de error
+      $clases_en_vivo[$row-1]['codigocurso'] = $hoja_arquetipo_inicial->getCell('G'.$row)->getValue(); //COL-EVENTO G
+
+      $clases_en_vivo[$row-1]['nombrecurso'] = $hoja_arquetipo_inicial->getCell('I'.$row)->getValue(); //COL-PROGRAMAS-Fechas I
 
       $clases_en_vivo[$row-1]['descripcion'] = transformacionDescripcionCurso($clases_en_vivo[$row-1]['nombrecurso']);
-      //echo $clases_en_vivo[$row-1]['descripcion']."<br/>" ;
+
       $url_imagen_curso = transformacionUrlImagenCurso($clases_en_vivo[$row-1]['nombrecurso']);
 
-      //echo "<br/><hr/>".$clases_en_vivo[$row-1]['codigocurso']."<br/>" ;
-      //echo $clases_en_vivo[$row-1]['nombrecurso']."<br/>" ;
+      // echo $clases_en_vivo[$row-1]['codigocurso']."<br/>" ;
+      // echo $clases_en_vivo[$row-1]['nombrecurso']."<br/>" ;
+      // echo $clases_en_vivo[$row-1]['descripcion']."<br/>" ;
 
       //var_dump($url_imagen_curso); // url or false
       if( $url_imagen_curso )
@@ -54,35 +66,34 @@ if($PCO_Accion=="Cargar_Excel")
       //echo $clases_en_vivo[$row-1]['urlimagen']."<br/>" ;
 
       //Ajustar fecha de inicio
-      $fecha_inicio = transformarFecha($hoja_arquetipo_inicial->getCell('I'.$row));
-      $clases_en_vivo[$row-1]['fecha_inicio'] = date('Y-m-d', PHPExcel_Shared_Date::ExcelToPHP($hoja_arquetipo_inicial->getCell('I'.$row)->getValue()));
+      $fecha_inicio = transformarFecha($hoja_arquetipo_inicial->getCell('K'.$row)); //COL-Fecha-Inicio K
+      $clases_en_vivo[$row-1]['fecha_inicio'] = date('Y-m-d', PHPExcel_Shared_Date::ExcelToPHP($hoja_arquetipo_inicial->getCell('K'.$row)->getValue()));
+      //echo "fecha_inicio:" . $clases_en_vivo[$row-1]['fecha_inicio'] . "<br/>";
       $clases_en_vivo[$row-1]['dia'] = $fecha_inicio['dia'];
-      $clases_en_vivo[$row-1]['mes'] = $meses[$fecha_clase['mes']-1];
-      $clases_en_vivo[$row-1]['anio'] = $fecha_clase['ano'];
+      $clases_en_vivo[$row-1]['mes'] = $meses[$fecha_inicio['mes']-1];
+      $clases_en_vivo[$row-1]['anio'] = $fecha_inicio['ano'];
 
-      $clases_en_vivo[$row-1]['horario'] = $hoja_arquetipo_inicial->getCell('H'.$row)->getValue();
-      $horarios = transformarHorario($clases_en_vivo[$row-1]['fecha_inicio'],$hoja_arquetipo_inicial->getCell('H'.$row)->getValue());
+      $clases_en_vivo[$row-1]['horario'] = $hoja_arquetipo_inicial->getCell('J'.$row)->getValue(); //COL-Horario J
+      //echo "Horario" . $clases_en_vivo[$row-1]['horario'] . "<br/>";
+      $horarios = transformarHorario($clases_en_vivo[$row-1]['fecha_inicio'],$hoja_arquetipo_inicial->getCell('J'.$row)->getValue());
       $clases_en_vivo[$row-1]['horai'] = $horarios['inicio']['hora'];
       $clases_en_vivo[$row-1]['minutoi'] = $horarios['inicio']['min'];
       $clases_en_vivo[$row-1]['horaf'] = $horarios['final']['hora'];
       $clases_en_vivo[$row-1]['minutof'] = $horarios['final']['min'];
 
-      // echo $clases_en_vivo[$row-1]['fecha_inicio']."<br/>" ;
-      // echo $clases_en_vivo[$row-1]['dia']."<br/>" ;
-      // echo $clases_en_vivo[$row-1]['mes']."<br/>" ;
-      // echo $clases_en_vivo[$row-1]['anio']."<br/>" ;
-      // echo $clases_en_vivo[$row-1]['horai']."<br/>" ;
-      // echo $clases_en_vivo[$row-1]['minutoi']."<br/>" ;
-      // echo $clases_en_vivo[$row-1]['horaf']."<br/>" ;
-      // echo $clases_en_vivo[$row-1]['minutof']."<br/>" ;
+      // echo $clases_en_vivo[$row-1]['fecha_inicio']."<br/>";
+      // echo $clases_en_vivo[$row-1]['dia']. "/" . $clases_en_vivo[$row-1]['mes']. "/" . $clases_en_vivo[$row-1]['anio']."<br/>";
+      // echo $clases_en_vivo[$row-1]['horai'].":" . $clases_en_vivo[$row-1]['minutoi']."<br/>";
+      // echo $clases_en_vivo[$row-1]['horaf'].":" . $clases_en_vivo[$row-1]['minutof']."<br/>";
 
-      $url_sala_webex = $hoja_arquetipo_inicial->getCell('T'.$row)->getValue();
+      $url_sala_webex = $hoja_arquetipo_inicial->getCell('V'.$row)->getValue(); //COL-sala webex V
       //var_dump($url_sala_webex);
       if( ! is_null($url_sala_webex)){
         $clases_en_vivo[$row-1]['webex'] = $url_sala_webex;
 
-        $clases_en_vivo[$row-1]['sala'] = $hoja_arquetipo_inicial->getCell('U'.$row)->getValue();
-        $clases_en_vivo[$row-1]['contrasena'] = $hoja_arquetipo_inicial->getCell('V'.$row)->getValue();
+        $clases_en_vivo[$row-1]['sala'] = $hoja_arquetipo_inicial->getCell('W'.$row)->getValue(); //COL-sala y Contraseña W
+        //$clases_en_vivo[$row-1]['contrasena'] = $hoja_arquetipo_inicial->getCell('V'.$row)->getValue();
+        //$$clases_en_vivo[$row-1]['contrasena'] =
 
         //$html_code = explode(":", $clases_en_vivo[$row-1]['contrasena']);
         //$explode_contrasena = explode("Contraseña",$html_code[1]);
@@ -169,7 +180,7 @@ if($PCO_Accion=="Cargar_Excel")
               '</div>'.
               '<div class="alert alert-warning alert-dismissible" role="alert">
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <strong>Advertencia! </strong>Se han encontrado las siguientes inconsistencias y no fueron importadas:<br/>'.
+                <strong>Advertencia! </strong>Se han encontrado las siguientes inconsistencias y no fueron importadas:<br/><br/>'.
                 encontrarErrores($clases_en_vivo).
               '</div>
             </div>'.
@@ -266,7 +277,15 @@ if($PCO_Accion=="CrearExcelArquetipoCursosEnVivo")
 
 function transformarFechaClase($cell)
 {
-  //$InvDate = $cell->getValue();
+  //$InvDate = $cell->getValue()
+  //$I
+  $pos = strpos($mystring, $findme);
+
+  // Nótese el uso de ===. Puesto que == simple no funcionará como se espera
+  // porque la posición de 'a' está en el 1° (primer) caracter.
+  if ($pos === false)
+    return $pos ;
+
   $partes = explode("-",$cell);
   $fecha = trim($partes[1]);
 
@@ -441,11 +460,11 @@ function encontrarErrores($array, $imprimir = false)
   foreach($array as $linea){
     //mostrar errores de url imagen del curso
     if(is_null($linea['urlimagen'])){
-      $html_rpta .= "Error en línea " . $linea['linea'] . " Código de Curso:". $linea['codigocurso'] . " [No existe URL de la imagen del curso]<br/>";
+      $html_rpta .= "Información incompleta en <b>línea " . $linea['linea'] . "</b> Curso:". $linea['nombrecurso'] . " " . $linea['nombrecurso'] . " <br/>[No existe URL de la imagen del curso]<hr/>";
     }
     //mostrar errores de url sala de webex
     if(is_null($linea['webex'])){
-      $html_rpta .= "Información incompleta en <b>línea " . $linea['linea'] . "</b> Código de Curso:". $linea['codigocurso'] . " [No existe URL de la sala webex]<br/>";
+      $html_rpta .= "Información incompleta en <b>línea " . $linea['linea'] . "</b> Curso:". $linea['codigocurso'] . " " . $linea['nombrecurso'] . " <br/>[No existe URL de la sala webex]<hr/>";
     }
   }
   $html_rpta .= "</p>";
