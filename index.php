@@ -93,7 +93,7 @@ if($PCO_Accion=="Cargar_Excel")
 
         $clases_en_vivo[$row-1]['sala'] = $hoja_arquetipo_inicial->getCell('W'.$row)->getValue(); //COL-sala y Contraseña W
         //$clases_en_vivo[$row-1]['contrasena'] = $hoja_arquetipo_inicial->getCell('V'.$row)->getValue();
-        //$$clases_en_vivo[$row-1]['contrasena'] =
+        $$clases_en_vivo[$row-1]['contrasena'] = 'Virtual' . date('Y');
 
         //$html_code = explode(":", $clases_en_vivo[$row-1]['contrasena']);
         //$explode_contrasena = explode("Contraseña",$html_code[1]);
